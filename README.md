@@ -1,8 +1,30 @@
+<div align="center">
+
 # bookmarkAsNewtab
 
-把书签变成新标签页：浏览器扩展自动汇入你的书签与浏览历史，newtab 成为个人导航起点。
+**把书签变成新标签页** —— Chrome 扩展自动汇入你的书签与浏览历史，newtab 成为个人导航起点。
 
-自托管：一个 Node server + 静态前端 + Chrome 扩展，数据全部留在你自己的机器上。
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Node](https://img.shields.io/badge/node-%E2%89%A524-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![pnpm](https://img.shields.io/badge/pnpm-12-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
+[![Chrome MV3](https://img.shields.io/badge/Chrome-MV3-4285F4?logo=googlechrome&logoColor=white)](#)
+[![Self-hosted](https://img.shields.io/badge/self--hosted-%E6%95%B0%E6%8D%AE%E8%87%AA%E6%8C%81-4c1)](#)
+
+自托管 · 数据全部留在你自己的机器上 · 无第三方追踪
+
+</div>
+
+![bookmarkAsNewtab — 书签即新标签页](assets/screenshot.png)
+
+## 特性
+
+- 🔖 **书签即新标签页**：列表 / 卡片 / 图标三视图，拖拽排序、跨文件夹移动、搜索
+- 🕘 **浏览历史**：关键词 / 域名 / 时间段筛选；排除域名多端同步，扩展采集端即时生效
+- 🔄 **多端同步**：Yjs CRDT 星型中继；书签、偏好、文件夹实时一致
+- 🧩 **Chrome 扩展**：自动汇入书签、上报历史、页面内回写编辑
+- 🎨 **Dawn 设计系统**：玻璃拟态 + 晨光渐变，主题与壁纸
+- 📱 **PWA**：手机 / 平板可「添加到主屏幕」
+- ✨ **可选自动分类**：接任意 OpenAI 兼容端点，模型给书签提建议（默认关闭）
 
 ## 快速开始
 
@@ -28,19 +50,19 @@ SYNC_TOKEN=<一个长随机值> node packages/server/dist/index.js
 
 ## 环境变量
 
-| 变量                    | 默认                   | 说明                                                          |
-| ----------------------- | ---------------------- | ------------------------------------------------------------- |
-| `SYNC_TOKEN`            | 无（必填）             | 访问 `/api` 与 `/ws` 的 Bearer token；未设置时全部拒绝        |
-| `HOST`                  | `127.0.0.1`            | 监听地址                                                      |
-| `PORT`                  | `8090`                 | 监听端口                                                      |
-| `DATA_DIR`              | `packages/server/data` | 数据目录（CRDT 快照 + 历史 JSONL）                            |
-| `OWNER_NAME`            | 空                     | 页首问候语里的名字；不设置则问候语不带名字                    |
-| `CLASSIFIER_URL`        | 空                     | 自动分类的 OpenAI 兼容端点（到 `/v1` 为止）；不设置则功能关闭 |
-| `CLASSIFIER_MODEL`      | 空                     | 分类模型名                                                    |
-| `CLASSIFIER_API_KEY`    | 空                     | 端点鉴权（可选）                                              |
-| `CLASSIFIER_TIMEOUT_MS` | `30000`                | 分类请求超时                                                  |
-| `CLASSIFIER_MAX_TOKENS` | `512`                  | 分类输出预算                                                  |
-| `RELAY_DEBUG`           | 空                     | 设为 `1` 打印 WS 消息级日志                                   |
+| 变量 | 默认 | 说明 |
+|---|---|---|
+| `SYNC_TOKEN` | 无（必填） | 访问 `/api` 与 `/ws` 的 Bearer token；未设置时全部拒绝 |
+| `HOST` | `127.0.0.1` | 监听地址 |
+| `PORT` | `8090` | 监听端口 |
+| `DATA_DIR` | `packages/server/data` | 数据目录（CRDT 快照 + 历史 JSONL） |
+| `OWNER_NAME` | 空 | 页首问候语里的名字；不设置则问候语不带名字 |
+| `CLASSIFIER_URL` | 空 | 自动分类的 OpenAI 兼容端点（到 `/v1` 为止）；不设置则功能关闭 |
+| `CLASSIFIER_MODEL` | 空 | 分类模型名 |
+| `CLASSIFIER_API_KEY` | 空 | 端点鉴权（可选） |
+| `CLASSIFIER_TIMEOUT_MS` | `30000` | 分类请求超时 |
+| `CLASSIFIER_MAX_TOKENS` | `512` | 分类输出预算 |
+| `RELAY_DEBUG` | 空 | 设为 `1` 打印 WS 消息级日志 |
 
 ## 使用
 

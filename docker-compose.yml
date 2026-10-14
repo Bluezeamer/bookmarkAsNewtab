@@ -1,0 +1,16 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: packages/server/Dockerfile
+    ports:
+      - "3000:3000"
+    # server 默认绑回环:8090（生产形态）; 容器内显式放开到 3000（spec req 4/5）
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      # 必填: 访问 /api 与 /ws 的 Bearer token（未设置时 compose 直接报错）
+      SYNC_TOKEN: ${SYNC_TOKEN:?SYNC_TOKEN is required}
+    volumes:
+      # 数据持久化（CRDT 快照 + 历史 JSONL）: 不挂载则容器重建即丢
+      - ./data:/app/packages/server/data

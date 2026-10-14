@@ -1,0 +1,25 @@
+{
+  "name": "server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/sync.test.mjs && node test/classifier.test.mjs && node test/dedupe.test.mjs && node test/favicon.test.mjs && node test/static.test.mjs",
+    "start": "node dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "@types/ws": "^8.18.2",
+    "typescript": "~5.9.3",
+    "esbuild": "^0.28.2",
+    "y-websocket": "^3.1.0"
+  },
+  "dependencies": {
+    "lib0": "^0.2.119",
+    "ws": "^8.22.0",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.33"
+  }
+}

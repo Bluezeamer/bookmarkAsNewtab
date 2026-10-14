@@ -1,0 +1,441 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   Dawn — Newtab 设计系统（能力块 10 · ①）
+   权威: 下方 @theme 令牌
+   世界: 亮色玻璃拟态（晨光渐变 + 三辉光漂移 + 磨砂玻璃 + 单一 accent）
+   禁令（craft-floor）: 硬偏移阴影 / emoji 当图标 / 渐变文字 / 分隔线 / 外部字体与图片
+   ========================================================================== */
+
+@theme {
+  /* 地面（淡天光竖向渐变） */
+  --color-ground-top: #fdfdfc;
+  --color-ground-mid: #f1f5fc;
+  --color-ground-deep: #ebf0f8;
+  /* 墨色阶 */
+  --color-ink: #232a3b;
+  --color-ink-2: #5c667e;
+  --color-ink-3: #667089;
+  /* 唯一 accent: dawn indigo（只用于状态: 选中/焦点/图钉/主按钮） */
+  --color-accent: #5558e0;
+  /* 玻璃 */
+  --color-glass: rgba(255, 255, 255, 0.62);
+  --color-glass-card: rgba(255, 255, 255, 0.58);
+  --color-glass-edge: rgba(255, 255, 255, 0.68);
+  /* 辉光（背景色场） */
+  --color-glow-peri: rgba(122, 132, 255, 0.4);
+  --color-glow-aqua: rgba(125, 211, 252, 0.44);
+  --color-glow-apricot: rgba(251, 191, 163, 0.34);
+  /* 圆角 */
+  --radius-console: 28px;
+  --radius-card: 16px;
+  --radius-field: 16px;
+  --radius-tile: 12px;
+  /* 字体族: 系统衬线只做"语气"（问候/空态标题/首字母）, 系统无衬线做 UI */
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* 阴影词表: console 悬浮 / 卡片近平面 / hover 才出现宽阴影 */
+  --shadow-console:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 24px 64px -16px rgba(85, 88, 224, 0.2),
+    0 2px 6px rgba(35, 42, 59, 0.06);
+  --shadow-card: 0 1px 2px rgba(35, 42, 59, 0.04), 0 6px 16px -6px rgba(35, 42, 59, 0.08);
+  --shadow-card-hover:
+    0 4px 10px rgba(35, 42, 59, 0.05), 0 18px 36px -12px rgba(85, 88, 224, 0.26);
+  /* 缓动: 一条动效文法 */
+  --ease-dawn: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html,
+body {
+  margin: 0;
+  color: var(--color-ink);
+  background: linear-gradient(180deg, #fdfdfc 0%, #f1f5fc 45%, #ebf0f8 100%);
+  background-attachment: fixed;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* 注意: 这里**不能**写 overflow-x: hidden —— 在 html/body 上设它会让 body 变成滚动容器,
+     侧栏的 position: sticky 随即失效（实测: 页面滚动时侧栏跟着滚走, top 83 → -317）。
+     横向溢出由 .dawn-glow 容器自己的 overflow-hidden 处理 */
+}
+
+/* 主题化浏览器表面（未绘制的部分也要带设计） */
+::selection {
+  background: rgba(85, 88, 224, 0.22);
+  color: var(--color-ink);
+}
+html {
+  caret-color: var(--color-accent);
+  scrollbar-color: rgba(35, 42, 59, 0.18) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(35, 42, 59, 0.18);
+  border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(35, 42, 59, 0.32);
+  background-clip: content-box;
+}
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(85, 88, 224, 0.28);
+}
+
+/* ---------- 原语（组件复用; 组件内不再写颜色字面量） ---------- */
+
+/* 玻璃面板: 必须能看见它磨过的背景（One Frost Rule） */
+.glass {
+  background: var(--color-glass);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  backdrop-filter: blur(24px) saturate(1.5);
+  border-radius: var(--radius-console);
+  box-shadow: var(--shadow-console);
+}
+/* 卡片: **不用 backdrop-filter**（能力块 11 · ② 性能）
+   原因（实测）: 2316px 视口下 36 个元素带 backdrop-filter + 3 个动画辉光 →
+   每帧都要重新采样背后的漂移辉光, 滚动 p50 51ms / p90 116ms / max 249ms（≈20FPS）。
+   在柔和渐变上, 半透明白 + 发丝边 + 阴影与磨砂**肉眼几乎无差**, 但代价小一个数量级。
+   磨砂只留给少数大面板: .glass / 侧栏 / 抽屉 / 菜单 / 门禁页。 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid var(--color-glass-edge);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+/* 近平面 → hover 才出现宽阴影（Flat-Until-Lifted） */
+.lift {
+  transition:
+    transform 0.22s var(--ease-dawn),
+    box-shadow 0.22s var(--ease-dawn),
+    background 0.22s var(--ease-dawn);
+}
+.lift:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow-card-hover);
+}
+.lift:active {
+  transform: translateY(-1px);
+}
+/* 兼容旧类名（能力块 8 的按压反馈）: 统一为 Dawn 抬升 */
+.pressable {
+  transition:
+    transform 0.22s var(--ease-dawn),
+    box-shadow 0.22s var(--ease-dawn),
+    background 0.22s var(--ease-dawn);
+}
+.pressable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+.pressable:active {
+  transform: translateY(0);
+}
+/* 药丸按钮（主/次） */
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-accent);
+  border: 0;
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  box-shadow: 0 6px 16px -6px rgba(85, 88, 224, 0.55);
+  transition:
+    transform 0.18s var(--ease-dawn),
+    box-shadow 0.18s var(--ease-dawn);
+}
+.btn-accent:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px -8px rgba(85, 88, 224, 0.6);
+}
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #3c4560;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  transition:
+    background 0.18s var(--ease-dawn),
+    transform 0.18s var(--ease-dawn);
+}
+.btn-quiet:hover {
+  background: rgba(255, 255, 255, 0.78);
+  transform: translateY(-1px);
+}
+/* 输入框 */
+.field {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--color-glass-edge);
+  border-radius: var(--radius-field);
+  box-shadow: inset 0 1px 2px rgba(35, 42, 59, 0.03);
+  color: var(--color-ink);
+  outline: none;
+  transition:
+    border-color 0.2s var(--ease-dawn),
+    box-shadow 0.2s var(--ease-dawn);
+}
+.field:focus-within,
+.field:focus {
+  border-color: rgba(85, 88, 224, 0.55);
+  box-shadow: 0 0 0 4px rgba(85, 88, 224, 0.14);
+}
+.field::placeholder {
+  color: var(--color-ink-3);
+  opacity: 1;
+}
+/* 浮层（下拉/菜单）: **不透明** —— 半透明会让背后内容透出来（用户实测截图里的观感问题）。
+   面板（console/侧栏）用 .glass 磨砂; 浮层必须实底。 */
+.popover {
+  background: #ffffff;
+  border: 1px solid var(--color-glass-edge);
+  border-radius: var(--radius-card);
+  box-shadow:
+    0 18px 40px -12px rgba(35, 42, 59, 0.22),
+    0 2px 6px rgba(35, 42, 59, 0.06);
+}
+
+/* 键帽（浏览器表面的一部分: 主题化, 不留给默认样式） */
+.kbd {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--color-ink-2);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(35, 42, 59, 0.12);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 3px 7px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* 图标格（柔和同色底 + 衬线首字母; 真实 favicon 时不加任何容器） */
+.icon-tile {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-tile);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+/* 卡片网格: 间距由偏好 gapX/gapY 驱动（能力块 10 · ③） */
+.bk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  column-gap: var(--bnt-gap-x, 14px);
+  row-gap: var(--bnt-gap-y, 14px);
+}
+
+/* ---------- 动效: 一条文法（入场级联 + 缓慢漂移; reduced-motion 全关） ---------- */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise-in {
+  animation: rise 0.3s var(--ease-dawn) both;
+}
+@keyframes drawer-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.drawer-in {
+  animation: drawer-in 0.22s var(--ease-dawn) both;
+}
+@keyframes drift-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(-70px, 50px, 0) scale(1.12);
+  }
+}
+@keyframes drift-b {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.06);
+  }
+  to {
+    transform: translate3d(60px, -40px, 0) scale(0.94);
+  }
+}
+@keyframes drift-c {
+  from {
+    transform: translate3d(0, 0, 0) scale(0.97);
+  }
+  to {
+    transform: translate3d(-40px, -60px, 0) scale(1.1);
+  }
+}
+/* 晨光背景: 三个大辉光缓慢漂移（background 是场景, 不是装饰） */
+.dawn-glow {
+  position: absolute;
+  border-radius: 50%;
+  /* 不用 filter: blur() —— radial-gradient 的柔和衰减已经提供了同样的观感,
+     而大半径 filter 会让每帧重新光栅化（能力块 11 · ② 实测的卡顿主因之一）。
+     漂移只做 transform（合成层, GPU 便宜）。 */
+  will-change: transform;
+  transform: translateZ(0);
+}
+.dawn-glow-peri {
+  width: 640px;
+  height: 640px;
+  top: -180px;
+  right: -120px;
+  background: radial-gradient(circle, var(--color-glow-peri) 0%, rgba(122, 132, 255, 0) 68%);
+  animation: drift-a 38s ease-in-out infinite alternate;
+}
+.dawn-glow-aqua {
+  width: 720px;
+  height: 720px;
+  left: -220px;
+  top: 22%;
+  background: radial-gradient(circle, var(--color-glow-aqua) 0%, rgba(125, 211, 252, 0) 68%);
+  animation: drift-b 46s ease-in-out infinite alternate;
+}
+.dawn-glow-apricot {
+  width: 600px;
+  height: 600px;
+  right: 4%;
+  bottom: -220px;
+  background: radial-gradient(circle, var(--color-glow-apricot) 0%, rgba(251, 191, 163, 0) 68%);
+  animation: drift-c 52s ease-in-out infinite alternate;
+}
+/* 卡片 hover 扫光（115° 光带横穿） */
+.sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.55) 48%, transparent 64%);
+  transform: translateX(-135%);
+  transition: transform 0.7s var(--ease-dawn);
+}
+.sheen:hover::after {
+  transform: translateX(135%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dawn-glow {
+    animation: none;
+  }
+  .rise-in,
+  .drawer-in {
+    animation: none;
+  }
+  .lift,
+  .pressable,
+  .sheen::after {
+    transition: none;
+  }
+}
+
+/* 能力块 7 · I3 v2: 浮动副本（脱离文档的 DOM 克隆, 只改 transform → 不触发重渲染/不闪） */
+.dnd-clone {
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 28px rgba(35, 42, 59, 0.22);
+  will-change: transform;
+  opacity: 0.94;
+}
+
+/* 能力块 7 · I3: 拖拽中的卡片不参与触摸滚动（避免与拖拽手势抢事件） */
+[data-dragging="true"] {
+  touch-action: none;
+}
+
+/* 仅图标形态的网格（列宽由密度决定, 间距由偏好决定） */
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  column-gap: var(--bnt-gap-x, 14px);
+  row-gap: var(--bnt-gap-y, 14px);
+}
+
+/* 安全区（刘海屏） */
+.app-shell {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  /* 底部留白在 <main> 上（留在这一层会让侧栏 sticky 的父容器提前结束） */
+}
+@media (min-width: 640px) {
+  .app-shell {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+}
+
+/* 去 300ms 点击延迟 + 去移动端点击高亮块 */
+button,
+a,
+select,
+input,
+summary,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 侧栏导航行（能力块 12 · ③）: 行高 = 点击目标高度（偏好可调, 默认 34px）;
+   ::before 把命中区向上下各扩 2px → 覆盖行间缝隙, 使**视觉 hover 与点击目标一致**
+   （原实现只有内层 label 按钮可点, 行的 padding/缝隙/计数徽标都是死区） */
+[data-folder-row] {
+  position: relative;
+  min-height: var(--bnt-nav-row, 34px);
+}
+[data-folder-row]::before {
+  content: "";
+  position: absolute;
+  inset: -2px 0;
+}
+
+/* 未分组为空时隐藏该行（能力块 15 · D）: 归属修好后它通常为空, 显示"未分组 0"像遗留物。
+   注: 为空时不做拖拽落点（拖拽中临时显示会造成布局跳动 → 落点偏移）;
+   "移到未分组"走右键菜单的「移动到…未分组」, 不依赖这一行。 */
+[data-folder-row="root"][data-empty="true"] {
+  display: none;
+}
+
+/* 书签拖到侧栏文件夹行时的落点高亮（能力块 12 · ②）: 由拖拽引擎直接写属性, 无 React 状态 */
+[data-folder-row][data-bk-drop] {
+  background: rgba(85, 88, 224, 0.14);
+  box-shadow: inset 2px 0 0 var(--color-accent);
+}
+
+/* 跳转锚点（能力块 12 · ④）: 改为"瞬时 + **对齐顶部**"（用户要求: 顶层文件夹跳到最顶部更符合直觉）。
+   常量锚点, 与 App 里 spy 的阅读线（24px）配套 —— 跳转后目标顶部落在 16px, 恰在阅读线上方。 */
+[data-group],
+[data-drop-group] {
+  /* 56px: 让开顶部常驻 chrome（☰/设置按钮 40px + 留白）—— 跳转后标题不被浮层遮住 */
+  scroll-margin-top: 56px;
+}

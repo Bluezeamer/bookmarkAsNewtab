@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "bookmarkAsNewtab",
+  "description": "把书签变成新标签页：自动汇入书签与浏览历史",
+  "version": "0.1.0",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "background": {
+    "service_worker": "sw.js",
+    "type": "module"
+  },
+  "permissions": [
+    "bookmarks",
+    "history",
+    "storage",
+    "alarms",
+    "favicon"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "_favicon/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "bookmarkAsNewtab"
+  }
+}

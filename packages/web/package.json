@@ -1,0 +1,32 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/web.test.mts && node test/crdt-status.test.mts && node test/history.test.mts",
+    "test:browser": "node test/browser/dnd.browser.mts",
+    "test:browser:density": "node test/browser/density.browser.mts",
+    "test:browser:sidebar": "node test/browser/sidebar.browser.mts",
+    "test:browser:search": "node test/browser/search-engine.browser.mts",
+    "test:browser:menu": "node test/browser/menu.browser.mts",
+    "test:browser:layout": "node test/browser/layout-perf.browser.mts"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~5.9.3",
+    "vite": "^8.3.4"
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "y-websocket": "^3.1.0",
+    "yjs": "^13.6.33"
+  },
+  "type": "module"
+}

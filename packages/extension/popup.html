@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>bookmarkAsNewtab</title>
+    <style>
+      /* Dawn（与 WebUI / 门禁页同一套 token） */
+      :root {
+        --ink: #232a3b;
+        --ink-2: #5c667e;
+        --ink-3: #667089;
+        --accent: #5558e0;
+        --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+        --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        width: 296px;
+        margin: 0;
+        padding: 16px;
+        color: var(--ink);
+        font-family: var(--sans);
+        background: linear-gradient(180deg, #fdfdfc 0%, #f1f5fc 60%, #ebf0f8 100%);
+        -webkit-font-smoothing: antialiased;
+      }
+      .wordmark {
+        font-family: var(--serif);
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .wordmark i {
+        display: inline-block;
+        width: 5px;
+        height: 5px;
+        margin-left: 4px;
+        border-radius: 50%;
+        background: var(--accent);
+        transform: translateY(-5px);
+      }
+      .status {
+        margin: 12px 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 3px rgba(85, 88, 224, 0.14);
+        flex: none;
+      }
+      .dot.bad {
+        background: #c2410c;
+        box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.14);
+      }
+      .meta {
+        font-size: 12px;
+        color: var(--ink-3);
+        line-height: 1.5;
+        word-break: break-all;
+      }
+      .msg {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #b45309;
+        line-height: 1.5;
+      }
+      .msg.hidden {
+        display: none;
+      }
+      .msg.ok {
+        color: var(--ink-2);
+      }
+      .actions {
+        margin-top: 14px;
+        display: grid;
+        gap: 8px;
+      }
+      .sep {
+        margin: 14px 0 6px;
+        font-size: 11px;
+        color: var(--ink-3);
+      }
+      button {
+        width: 100%;
+        padding: 10px 14px;
+        font: 600 13.5px/1 var(--sans);
+        color: #fff;
+        background: var(--accent);
+        border: 0;
+        border-radius: 999px;
+        cursor: pointer;
+        box-shadow: 0 6px 16px -6px rgba(85, 88, 224, 0.55);
+        transition:
+          transform 0.18s var(--ease),
+          background 0.18s var(--ease);
+      }
+      button:hover {
+        transform: translateY(-1px);
+      }
+      button.quiet {
+        color: #3c4560;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        box-shadow: none;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+        transform: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wordmark">bookmarkAsNewtab<i></i></div>
+    <div class="status">
+      <span class="dot" id="dot"></span>
+      <span id="state">检查中…</span>
+    </div>
+    <div class="meta" id="meta"></div>
+    <div class="msg hidden" id="msg"></div>
+    <div class="actions">
+      <div class="sep">同步只在点击时发生（不会自动导入）</div>
+      <button id="inject">增量注入</button>
+      <button id="overwrite-from" class="quiet">浏览器覆盖后端</button>
+      <button id="overwrite-to" class="quiet">后端覆盖浏览器</button>
+      <div class="sep">其它</div>
+      <button id="open" class="quiet">打开新标签页</button>
+      <button id="edit" class="quiet">修改服务器与 token</button>
+    </div>
+    <script type="module" src="/src/popup.ts"></script>
+  </body>
+</html>

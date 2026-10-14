@@ -1,0 +1,21 @@
+{
+  "name": "@bnt/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/extension.test.mts",
+    "test:e2e": "node test/e2e/events.e2e.mjs"
+  },
+  "dependencies": {
+    "y-websocket": "^3.1.0",
+    "yjs": "^13.6.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.3.4",
+    "typescript": "^5.5.0",
+    "vite": "^8.3.0"
+  }
+}

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>bookmarkAsNewtab</title>
+    <style>
+      /* Dawn（与 WebUI 同一套 token）—— 零外部资源 */
+      :root {
+        --ground-top: #fdfdfc;
+        --ground-deep: #ebf0f8;
+        --ink: #232a3b;
+        --ink-2: #5c667e;
+        --ink-3: #667089;
+        --accent: #5558e0;
+        --edge: rgba(255, 255, 255, 0.72);
+        --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+        --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        color: var(--ink);
+        font-family: var(--sans);
+        background: linear-gradient(180deg, var(--ground-top) 0%, #f1f5fc 45%, var(--ground-deep) 100%);
+        -webkit-font-smoothing: antialiased;
+      }
+      iframe {
+        border: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      /* 关键: 百分比高度需要有高度的父链 —— 否则 iframe 的 height:100% 退化成 150px */
+      #frame-wrap {
+        height: 100%;
+      }
+      .hidden {
+        display: none !important;
+      }
+      /* 晨光背景（与 WebUI 一致: 三辉光 + 柔和渐变; 不用 filter: blur 以免重光栅化） */
+      .glow {
+        position: fixed;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .glow-a {
+        width: 640px;
+        height: 640px;
+        top: -180px;
+        right: -120px;
+        background: radial-gradient(circle, rgba(122, 132, 255, 0.4) 0%, rgba(122, 132, 255, 0) 68%);
+      }
+      .glow-b {
+        width: 720px;
+        height: 720px;
+        left: -220px;
+        top: 22%;
+        background: radial-gradient(circle, rgba(125, 211, 252, 0.44) 0%, rgba(125, 211, 252, 0) 68%);
+      }
+      .glow-c {
+        width: 600px;
+        height: 600px;
+        right: 4%;
+        bottom: -220px;
+        background: radial-gradient(circle, rgba(251, 191, 163, 0.34) 0%, rgba(251, 191, 163, 0) 68%);
+      }
+      .gate {
+        position: relative;
+        z-index: 1;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .card {
+        width: min(430px, 92vw);
+        padding: 28px 30px 26px;
+        background: rgba(255, 255, 255, 0.62);
+        -webkit-backdrop-filter: blur(24px) saturate(1.5);
+        backdrop-filter: blur(24px) saturate(1.5);
+        border-radius: 28px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.65),
+          0 24px 64px -16px rgba(85, 88, 224, 0.2),
+          0 2px 6px rgba(35, 42, 59, 0.06);
+        animation: rise 0.5s var(--ease) both;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+      }
+      .wordmark {
+        font-family: var(--serif);
+        font-size: 19px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .wordmark i {
+        display: inline-block;
+        width: 5px;
+        height: 5px;
+        margin-left: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+        transform: translateY(-6px);
+      }
+      .card h1 {
+        margin: 18px 0 6px;
+        font-family: var(--serif);
+        font-size: 27px;
+        font-weight: 500;
+        line-height: 1.15;
+        letter-spacing: -0.015em;
+      }
+      .card p {
+        margin: 0 0 18px;
+        font-size: 13.5px;
+        color: var(--ink-2);
+        line-height: 1.5;
+      }
+      label {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 11.5px;
+        color: var(--ink-3);
+      }
+      .card input {
+        width: 100%;
+        margin-top: 6px;
+        padding: 12px 14px;
+        font: 14px/1.2 var(--sans);
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid var(--edge);
+        border-radius: 16px;
+        box-shadow: inset 0 1px 2px rgba(35, 42, 59, 0.03);
+        outline: none;
+        transition:
+          border-color 0.2s var(--ease),
+          box-shadow 0.2s var(--ease);
+      }
+      .card input:focus {
+        border-color: rgba(85, 88, 224, 0.55);
+        box-shadow: 0 0 0 4px rgba(85, 88, 224, 0.14);
+      }
+      .card button {
+        width: 100%;
+        margin-top: 6px;
+        padding: 12px 18px;
+        font: 600 14px/1 var(--sans);
+        color: #fff;
+        background: var(--accent);
+        border: 0;
+        border-radius: 999px;
+        cursor: pointer;
+        box-shadow: 0 6px 16px -6px rgba(85, 88, 224, 0.55);
+        transition:
+          transform 0.18s var(--ease),
+          box-shadow 0.18s var(--ease);
+      }
+      .card button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px -8px rgba(85, 88, 224, 0.6);
+      }
+      .card button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .error {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #b45309;
+        line-height: 1.5;
+      }
+      .error.hidden {
+        display: none;
+      }
+      .hint {
+        margin-top: 14px;
+        font-size: 12px;
+        color: var(--ink-3);
+      }
+      .hint a {
+        color: var(--accent);
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .hint a:hover {
+        text-decoration: underline;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .card {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow glow-a"></div>
+    <div class="glow glow-b"></div>
+    <div class="glow glow-c"></div>
+
+    <div id="gate" class="gate">
+      <div class="card">
+        <div class="wordmark">bookmarkAsNewtab<i></i></div>
+        <h1 id="gate-title">连接你的服务器</h1>
+        <p>填入自托管服务地址与访问 token。配置只保存在本机扩展存储里。</p>
+        <label>
+          服务器地址
+          <input id="server" type="text" placeholder="https://bnt.example.com" autocomplete="off" spellcheck="false" />
+        </label>
+        <label>
+          访问 token
+          <input id="token" type="password" placeholder="SYNC_TOKEN" autocomplete="off" />
+        </label>
+        <button id="go" disabled>保存并开始同步</button>
+        <div class="error hidden" id="err"></div>
+        <div class="hint" id="hint">装好后书签与浏览历史会自动汇入；随时可从扩展图标打开面板修改配置。</div>
+      </div>
+    </div>
+
+    <div id="frame-wrap" class="hidden">
+      <!-- allow="clipboard-write": WebUI 的右键「复制链接」用 navigator.clipboard，
+           跨域 iframe 没有该授权会**静默失败**（能力块 13 · ② 重写时曾丢掉） -->
+      <iframe id="frame" title="bookmarkAsNewtab" allow="clipboard-write"></iframe>
+    </div>
+
+    <script type="module" src="/src/newtab.ts"></script>
+  </body>
+</html>
